@@ -36,6 +36,7 @@ set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 set(UTILS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/utils")
+set(LAYERS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/layers")
 # =================================================================
 # Find Required Packages
 # =================================================================
@@ -58,6 +59,7 @@ set(COMMON_INCLUDE_DIRS
     ${LIB_DIR}
     ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
     ${UTILS_DIR}/include
+    ${LAYERS_DIR}/Embedding/include
     # TODO: Add other include directories as needed
 )
 
@@ -77,6 +79,24 @@ target_include_directories(gpt_tokenizer PUBLIC
 target_link_libraries(gpt_tokenizer PUBLIC
     nlohmann_json::nlohmann_json
     # Add any other libraries that GPTTokenizer depends on
+)
+
+
+# Embedding layer library
+add_library(embedding_layer
+    ${LAYERS_DIR}/Embedding/src/input_embedding.cpp
+)
+
+target_include_directories(embedding_layer PUBLIC
+    ${COMMON_INCLUDE_DIRS}
+    ${LAYERS_DIR}/Embedding/include  # Ensure embedding header files are found
+)
+
+target_link_libraries(embedding_layer PUBLIC
+    xtensor
+    xtensor-blas
+    OpenBLAS::OpenBLAS
+    # Add any other libraries that EmbeddingLayer depends on
 )
 
 # =================================================================
@@ -114,6 +134,7 @@ add_executable(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PRIVATE ${COMMON_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE
     gpt_tokenizer
+    embedding_layer
     xtensor
     xtensor-blas
     OpenBLAS::OpenBLAS
