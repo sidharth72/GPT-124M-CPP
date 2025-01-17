@@ -24,7 +24,6 @@ flowchart TD
     Q --> Head2Q["Head 2"]
     K --> Head2K["Head 2"]
     V --> Head2V["Head 2"]
-
     
     Q --> Dots["..."]
     K --> Dots
@@ -58,7 +57,7 @@ flowchart TD
         [batch_size, seq_len, 64]"]
     end
 
-    AttOut1 & AttOut2 & AttOut3 & Dots & AttOut12 --> Concat["Concatenate
+    AttOut1 & AttOut2 & Dots & AttOut12 --> Concat["Concatenate
     [batch_size, seq_len, 768]"]
     
     Concat --> FinalProj["Final Projection
@@ -68,7 +67,8 @@ flowchart TD
     style Input fill:#2E86C1,color:#fff
     style ProjectionLayer fill:#8E44AD,color:#fff
     style QKVSplit fill:#16A085,color:#fff
-    style Head1,Head2,Head3,Head12 fill:#E74C3C,color:#fff
+    style Head1,Head2,Head12 fill:#E74C3C,color:#fff
     style Concat fill:#2980B9,color:#fff
     style FinalProj fill:#27AE60,color:#fff
+
 ```
