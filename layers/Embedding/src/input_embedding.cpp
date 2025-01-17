@@ -1,8 +1,18 @@
 /*
 
-The code three arguments, the look up table for token embedding and positional embeddings, and the input sequence of integer tokens.
-Then embeddings are taken from the lookup table based on the token indices.
-Then the token embeddings is being concatenated with the positional embeddings to get the input embedding to the transformer.
+Input Embedding
+---------------
+
+The input embedding,
+
+    - Takes the token embedding table and positional embedding table as input
+    - The token embedding table is a 2D tensor of shape (vocab_size, embed_dim)
+    - The positional embedding table is a 2D tensor of shape (seq_length, embed_dim)
+    - The forward function takes the input tokens as input and returns the embeddings of the input tokens
+    - The output tensor has shape (batch_size, seq_length, embed_dim)
+
+The forward function of the input embedding layer is implemented below.
+
 
 */
 

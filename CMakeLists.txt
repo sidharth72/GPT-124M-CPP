@@ -37,6 +37,7 @@ set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 set(UTILS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/utils")
 set(LAYERS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/layers")
+set(OPERATIONS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/operations")
 # =================================================================
 # Find Required Packages
 # =================================================================
@@ -61,6 +62,8 @@ set(COMMON_INCLUDE_DIRS
     ${UTILS_DIR}/include
     ${LAYERS_DIR}/Embedding/include
     ${LAYERS_DIR}/Normalization/include
+    ${LAYERS_DIR}/Attention/include
+    ${OPERATIONS_DIR}/include
     # TODO: Add other include directories as needed
 )
 
@@ -118,6 +121,42 @@ target_link_libraries(normalization_layer PUBLIC
     # Add any other libraries that NormalizationLayer depends on
 )
 
+# Activations library
+add_library(activations
+    ${OPERATIONS_DIR}/src/activations.cpp
+)
+
+target_include_directories(activations PUBLIC
+    ${COMMON_INCLUDE_DIRS}
+    ${OPERATIONS_DIR}/include  # Ensure activation header files are found
+)
+
+target_link_libraries(activations PUBLIC
+    xtensor
+    xtensor-blas
+    OpenBLAS::OpenBLAS
+    # Add any other libraries that Activations depends on
+)
+
+
+# Scaled Dot Product Attention library
+add_library(scaled_dot_attention
+    ${LAYERS_DIR}/Attention/src/scaled_dot_attention.cpp
+)
+
+target_include_directories(scaled_dot_attention PUBLIC
+    ${COMMON_INCLUDE_DIRS}
+    ${LAYERS_DIR}/Attention/include  # Ensure attention header files are found
+
+)
+
+target_link_libraries(scaled_dot_attention PUBLIC
+    xtensor
+    xtensor-blas
+    OpenBLAS::OpenBLAS
+    # Add any other libraries that ScaledDotAttention depends on
+)
+
 # target_link_libraries(${PROJECT_NAME} PRIVATE
 #     normalization_layer
 # )
@@ -150,7 +189,7 @@ endfunction()
 # =================================================================
 # Main executable
 add_executable(${PROJECT_NAME}
-    "${SRC_DIR}/main.cpp"
+    "${SRC_DIR}/GPT2.cpp"
     # TODO: Add other source files here
 )
 
@@ -159,6 +198,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     gpt_tokenizer
     embedding_layer
     normalization_layer
+    activations
+    scaled_dot_attention
     xtensor
     xtensor-blas
     OpenBLAS::OpenBLAS
