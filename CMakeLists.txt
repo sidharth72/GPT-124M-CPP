@@ -60,6 +60,7 @@ set(COMMON_INCLUDE_DIRS
     ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
     ${UTILS_DIR}/include
     ${LAYERS_DIR}/Embedding/include
+    ${LAYERS_DIR}/Normalization/include
     # TODO: Add other include directories as needed
 )
 
@@ -99,6 +100,28 @@ target_link_libraries(embedding_layer PUBLIC
     # Add any other libraries that EmbeddingLayer depends on
 )
 
+
+# Normalization layer library
+add_library(normalization_layer
+    ${LAYERS_DIR}/Normalization/src/layer_normalization.cpp
+)
+
+target_include_directories(normalization_layer PUBLIC
+    ${COMMON_INCLUDE_DIRS}
+    ${LAYERS_DIR}/Normalization/include  # Ensure normalization header files are found
+)
+
+target_link_libraries(normalization_layer PUBLIC
+    xtensor
+    xtensor-blas
+    OpenBLAS::OpenBLAS
+    # Add any other libraries that NormalizationLayer depends on
+)
+
+# target_link_libraries(${PROJECT_NAME} PRIVATE
+#     normalization_layer
+# )
+
 # =================================================================
 # Library Targets
 # =================================================================
@@ -135,6 +158,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${COMMON_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE
     gpt_tokenizer
     embedding_layer
+    normalization_layer
     xtensor
     xtensor-blas
     OpenBLAS::OpenBLAS

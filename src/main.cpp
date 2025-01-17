@@ -2,6 +2,7 @@
 #include <iostream>
 #include <xtensor/xio.hpp> // Add this header for xarray printing
 #include "input_embedding.hpp"
+#include "layer_normalization.hpp"
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnpy.hpp>
 
@@ -9,9 +10,9 @@ int main() {
     try {
         // Initialize tokenizer with vocabulary file
         GPT2Tokenizer tokenizer("../utils/vocab/gpt2_vocabulary.json");
-        
+  
         // Example text
-        std::string text = "Deep Learning is one of the revolutionary technologies in the field of computer science.";
+        std::string text = "Deep learning is one of the revolutionary technologies in the 21st century!";
         
         // Encode text to tokens
         xt::xarray<int> tokens = tokenizer.encode(text);
@@ -25,14 +26,21 @@ int main() {
 
         InputEmbedding input_embedding(token_embed_table, pos_embed_table);
 
+        std::string gamma_path = "../parameters/gpt2/transformer.h.0.ln_1.weight.npy";
+        std::string beta_path = "../parameters/gpt2/transformer.h.0.ln_1.bias.npy";
+
+        xt::xarray<float> gamma = xt::load_npy<float>(gamma_path);
+        xt::xarray<float> beta = xt::load_npy<float>(beta_path);
+
+        LayerNormalization layernorm(gamma, beta);
+        
+
         // Get input embeddings
         xt::xarray<float> input_embeddings = input_embedding.forward(tokens);
+        xt::xarray<float> layernorm_output = layernorm.forward(input_embeddings);
 
-        // Print the shape of the input embedding
-        std::cout << xt::adapt(input_embeddings.shape()) << std::endl;
+        std::cout << "Layer Norm: " << layernorm_output << std::endl;
 
-
-        std::cout << token_embed_table << std::endl;
         // Decode tokens back to text
         std::string decoded_text = tokenizer.decode(tokens);
         
