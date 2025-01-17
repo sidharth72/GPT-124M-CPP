@@ -24,10 +24,7 @@ flowchart TD
     Q --> Head2Q["Head 2"]
     K --> Head2K["Head 2"]
     V --> Head2V["Head 2"]
-    
-    Q --> Head3Q["Head 3"]
-    K --> Head3K["Head 3"]
-    V --> Head3V["Head 3"]
+
     
     Q --> Dots["..."]
     K --> Dots
@@ -50,14 +47,6 @@ flowchart TD
         Q × K^T / √d_k"]
         Score2 --> Softmax2["Softmax"]
         Softmax2 & Head2V --> AttOut2["Output
-        [batch_size, seq_len, 64]"]
-    end
-
-    subgraph Head3["Attention Head 3"]
-        Head3Q & Head3K --> Score3["Attention Scores
-        Q × K^T / √d_k"]
-        Score3 --> Softmax3["Softmax"]
-        Softmax3 & Head3V --> AttOut3["Output
         [batch_size, seq_len, 64]"]
     end
 
