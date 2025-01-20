@@ -41,7 +41,6 @@ xt::xarray<float> LayerNormalization::forward(const xt::xarray<float>& x) {
 
     // Compute mean along the last dimension
     xt::xarray<float> mean = xt::mean(x, axes, xt::keep_dims);
-    std::cout << "Mean: " << xt::adapt(mean.shape()) << std::endl;
     
     // Compute standard deviation along the last dimension
     xt::xarray<float> variance = xt::mean(xt::square(x - mean), axes, xt::keep_dims);

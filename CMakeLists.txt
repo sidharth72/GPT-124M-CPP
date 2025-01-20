@@ -85,6 +85,24 @@ target_link_libraries(gpt_tokenizer PUBLIC
     # Add any other libraries that GPTTokenizer depends on
 )
 
+# Parameter loader library
+add_library(parameter_loader
+    ${UTILS_DIR}/src/Loader.cpp
+)
+
+target_include_directories(parameter_loader PUBLIC
+    ${COMMON_INCLUDE_DIRS}
+    ${UTILS_DIR}/include  # Ensure loader header files are found
+)
+
+target_link_libraries(parameter_loader PUBLIC
+    nlohmann_json::nlohmann_json
+    xtensor
+    xtensor-blas
+    OpenBLAS::OpenBLAS
+
+    # Add any other libraries that Loader depends on
+)
 
 # Embedding layer library
 add_library(embedding_layer
@@ -220,6 +238,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     activations
     scaled_dot_attention
     multi_head_attention
+    parameter_loader
     xtensor
     xtensor-blas
     OpenBLAS::OpenBLAS

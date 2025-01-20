@@ -1,5 +1,6 @@
 #include "multihead_self_attention.hpp"
 #include <xtensor/xview.hpp>
+#include <xtensor/xadapt.hpp>
 #include <xtensor-blas/xlinalg.hpp>
 #include <stdexcept>
 
@@ -76,11 +77,15 @@ xt::xarray<float> MultiHeadAttention::forward(
     const xt::xarray<float>* mask
 ) {
     // Project input to Q, K, V space
-    auto projected = xt::linalg::dot(input, weights) + biases;
+    xt::xarray<float> projected = xt::linalg::dot(input, weights) + biases;
+
+    std::cout << "Projected shape: " << xt::adapt(projected.shape()) << std::endl;
     
     // Split the projected matrix into Q, K, V
     xt::xarray<float> q, k, v;
     std::tie(q, k, v) = this->split_qkv(projected);
+
+    
     
     // Split each of Q, K, V into heads
     auto q_heads = this->split_heads(q);
@@ -102,10 +107,10 @@ xt::xarray<float> MultiHeadAttention::forward(
     }
     
     // Combine the attention outputs
-    auto combined_attention = this->combine_heads(attention_outputs);
+    xt::xarray<float> combined_attention = this->combine_heads(attention_outputs);
     
     // Final projection
-    auto output = xt::linalg::dot(combined_attention, projection_weights) + projection_biases;
+    xt::xarray<float> output = xt::linalg::dot(combined_attention, projection_weights) + projection_biases;
     
     return output;
 }
