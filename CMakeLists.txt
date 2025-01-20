@@ -157,6 +157,25 @@ target_link_libraries(scaled_dot_attention PUBLIC
     # Add any other libraries that ScaledDotAttention depends on
 )
 
+# Multi-Head Attention library
+add_library(multi_head_attention
+    ${LAYERS_DIR}/Attention/src/multihead_self_attention.cpp
+)
+
+target_include_directories(multi_head_attention PUBLIC
+    ${COMMON_INCLUDE_DIRS}
+    ${LAYERS_DIR}/Attention/include  # Ensure attention header files are found
+
+)
+
+target_link_libraries(multi_head_attention PUBLIC
+    xtensor
+    xtensor-blas
+    OpenBLAS::OpenBLAS
+    # Add any other libraries that MultiHeadAttention depends on
+)
+
+
 # target_link_libraries(${PROJECT_NAME} PRIVATE
 #     normalization_layer
 # )
@@ -200,6 +219,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     normalization_layer
     activations
     scaled_dot_attention
+    multi_head_attention
     xtensor
     xtensor-blas
     OpenBLAS::OpenBLAS
