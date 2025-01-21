@@ -6,7 +6,28 @@
 #include "multihead_self_attention.hpp"
 #include <xtensor/xarray.hpp>
 #include <xtensor/xnpy.hpp>
+#include <xtensor/xbuilder.hpp>
+#include <xtensor/xrandom.hpp>
+#include <xtensor/xadapt.hpp>
+#include <xtensor/xview.hpp>
+#include <xtensor/xreducer.hpp>
 #include "Loader.hpp"
+
+
+xt::xarray<float> create_look_ahead_mask(size_t seq_length) {
+    // Create a square matrix of shape [seq_length, seq_length]
+    xt::xarray<float> mask = xt::triu(xt::ones<float>({seq_length, seq_length}), 1);
+    
+    // Convert to attention mask format where:
+    // - 0.0 indicates positions to attend to
+    // - 1.0 indicates positions to mask out
+    
+    // Expand dimensions to include batch size dimension [1, seq_length, seq_length]
+    std::vector<std::size_t> expanded_shape = {1, seq_length, seq_length};
+    xt::xarray<float> expanded_mask = xt::expand_dims(mask, 0);
+    
+    return expanded_mask;
+}
 
 int main() {
     try {
@@ -42,13 +63,19 @@ int main() {
 
         MultiHeadAttention attention(12, 768, 64, 64, 0.1f);
 
+        // Create a look ahead mask of shape [1, seq_len, seq_len]
+        xt::xarray<float> look_ahead_mask = create_look_ahead_mask(tokens.shape()[0]);
+
+        std::cout << "mask: " << look_ahead_mask << std::endl;
 
 
         x = input_embedding.forward(tokens);
         x = layernorm.forward(x);
-        x = attention.forward(x, attn_c_attn_weight, attn_c_proj_weight, attn_c_attn_bias, attn_c_proj_bias);
+        x = attention.forward(x, attn_c_attn_weight, attn_c_proj_weight, attn_c_attn_bias, attn_c_proj_bias, &look_ahead_mask);
 
-        std::cout << "Layer Norm: " << xt::adapt(x.shape()) << std::endl;
+
+
+        std::cout << "Attention Output: " << x << std::endl;
 
         
 

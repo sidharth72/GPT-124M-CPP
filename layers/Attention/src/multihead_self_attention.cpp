@@ -51,7 +51,6 @@ std::vector<xt::xarray<float>> MultiHeadAttention::split_heads(const xt::xarray<
 
 
 xt::xarray<float> MultiHeadAttention::combine_heads(const std::vector<xt::xarray<float>>& heads) {
-    // Concatenate all heads along the last dimension
     auto batch_size = heads[0].shape()[0];
     auto seq_len = heads[0].shape()[1];
     
@@ -60,8 +59,8 @@ xt::xarray<float> MultiHeadAttention::combine_heads(const std::vector<xt::xarray
     
     size_t depth = d_model / num_heads;
     for (size_t i = 0; i < num_heads; ++i) {
-        xt::xarray<float> view = xt::view(combined, xt::all(), xt::all(), xt::range(i * depth, (i + 1) * depth));
-        view = heads[i];
+        // Directly assign to the view using xt::strided_view
+        xt::strided_view(combined, {xt::all(), xt::all(), xt::range(i * depth, (i + 1) * depth)}) = heads[i];
     }
     
     return combined;
@@ -74,18 +73,17 @@ xt::xarray<float> MultiHeadAttention::forward(
     const xt::xarray<float>& projection_weights,
     const xt::xarray<float>& biases,
     const xt::xarray<float>& projection_biases,
-    const xt::xarray<float>* mask
+    const xt::xarray<float>* mask // Optional parameter
 ) {
+    auto batch_size = input.shape()[0];
+    auto seq_len = input.shape()[1];
+    
     // Project input to Q, K, V space
     xt::xarray<float> projected = xt::linalg::dot(input, weights) + biases;
-
-    std::cout << "Projected shape: " << xt::adapt(projected.shape()) << std::endl;
     
     // Split the projected matrix into Q, K, V
     xt::xarray<float> q, k, v;
     std::tie(q, k, v) = this->split_qkv(projected);
-
-    
     
     // Split each of Q, K, V into heads
     auto q_heads = this->split_heads(q);
@@ -95,19 +93,21 @@ xt::xarray<float> MultiHeadAttention::forward(
     std::vector<xt::xarray<float>> attention_outputs;
     attention_outputs.reserve(this->num_heads);
     
+    size_t head_dim = d_model / num_heads;
+    
     // Apply attention for each head
-    for(size_t i = 0; i < this->num_heads; ++i) {
-        auto [attention_output, _] = this->attention.forward(
-            q_heads[i], 
-            k_heads[i], 
-            v_heads[i], 
-            mask
-        );
-        attention_outputs.push_back(attention_output);
+    for (size_t i = 0; i < this->num_heads; ++i) {
+        // Ensure proper shapes for attention calculation
+        auto q_head = xt::eval(xt::reshape_view(q_heads[i], {batch_size, seq_len, head_dim}));
+        auto k_head = xt::eval(xt::reshape_view(k_heads[i], {batch_size, seq_len, head_dim}));
+        auto v_head = xt::eval(xt::reshape_view(v_heads[i], {batch_size, seq_len, head_dim}));
+        
+        auto attention_result = this->attention.forward(q_head, k_head, v_head, mask);
+        attention_outputs.push_back(attention_result.first);
     }
     
     // Combine the attention outputs
-    xt::xarray<float> combined_attention = this->combine_heads(attention_outputs);
+    auto combined_attention = this->combine_heads(attention_outputs);
     
     // Final projection
     xt::xarray<float> output = xt::linalg::dot(combined_attention, projection_weights) + projection_biases;

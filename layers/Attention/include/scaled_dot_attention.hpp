@@ -5,6 +5,7 @@
 #include <xtensor/xrandom.hpp>
 #include <xtensor-blas/xlinalg.hpp>
 #include <xtensor/xeval.hpp>  // Add this for xt::eval
+#include <xtensor/xadapt.hpp>
 
 class ScaledDotAttention {
 public:
