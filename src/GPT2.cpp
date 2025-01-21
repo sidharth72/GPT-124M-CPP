@@ -39,6 +39,9 @@ int main() {
         xt::xarray<int> tokens = tokenizer.encode(text);
 
         xt::xarray<float> x;
+        xt::xarray<float>ln1_out;
+        xt::xarray<float>ln2_out;
+
         GPT2WeightLoader loader;
         auto parameters = loader.loadWeights("../parameters/gpt2");
 
@@ -51,16 +54,15 @@ int main() {
         xt::xarray<float> attn_c_proj_weight = parameters["transformer.h.0.attn.c_proj.weight"];
         xt::xarray<float> attn_c_attn_bias = parameters["transformer.h.0.attn.c_attn.bias"];
         xt::xarray<float> attn_c_proj_bias = parameters["transformer.h.0.attn.c_proj.bias"];
+        xt::xarray<float> ln2_gamma = parameters["transformer.h.0.ln_2.weight"];
+        xt::xarray<float> ln2_beta = parameters["transformer.h.0.ln_2.bias"];
+
         
         InputEmbedding input_embedding(
             token_embed_table, 
             pos_embed_table);
 
-        LayerNormalization layernorm(
-            ln1_gamma,
-            ln1_beta
-        );
-
+        LayerNormalization layernorm;
         MultiHeadAttention attention(12, 768, 64, 64, 0.1f);
 
         // Create a look ahead mask of shape [1, seq_len, seq_len]
@@ -70,12 +72,12 @@ int main() {
 
 
         x = input_embedding.forward(tokens);
-        x = layernorm.forward(x);
-        x = attention.forward(x, attn_c_attn_weight, attn_c_proj_weight, attn_c_attn_bias, attn_c_proj_bias, &look_ahead_mask);
+        ln1_out = layernorm.forward(x, ln1_gamma, ln1_beta);
+        x = attention.forward(ln1_out, attn_c_attn_weight, attn_c_proj_weight, attn_c_attn_bias, attn_c_proj_bias, &look_ahead_mask);
+        x = x + ln1_out;
+        ln2_out = layernorm.forward(x, ln2_gamma, ln2_beta);
 
-
-
-        std::cout << "Attention Output: " << x << std::endl;
+        std::cout << "Layer norm2 output: " << ln2_out << std::endl;  
 
         
 

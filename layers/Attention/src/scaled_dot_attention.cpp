@@ -44,8 +44,6 @@ std::pair<xt::xarray<float>, xt::xarray<float>> ScaledDotAttention::forward(
 
     // Apply mask if provided
     if (mask != nullptr) {
-
-        std::cout << "Applying mask" << std::endl;
         xt::xarray<float> mask_value = xt::ones_like(scaled_attention_scores) * 
             (-std::numeric_limits<float>::infinity());
         scaled_attention_scores = xt::eval(xt::where(
@@ -57,8 +55,6 @@ std::pair<xt::xarray<float>, xt::xarray<float>> ScaledDotAttention::forward(
 
     // Apply softmax to convert the scores to probabilities sum up to 1
     xt::xarray<float> attention_weights = activation::Softmax::forward(scaled_attention_scores, 2);
-
-    std::cout << "After softmax: " << attention_weights << std::endl;
 
     // Apply dropout if needed
     if (dropout_probability > 0.0f) {

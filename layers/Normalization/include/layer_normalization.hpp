@@ -10,13 +10,16 @@
 
 class LayerNormalization {
 public:
-    // Modified constructor to accept weight and bias tensors
-    LayerNormalization(const xt::xarray<float>& gamma, const xt::xarray<float>& beta, float eps = 1e-5);
+    // Constructor now only takes epsilon
+    explicit LayerNormalization(float eps = 1e-5);
     
-    xt::xarray<float> forward(const xt::xarray<float>& x);
+    // Forward pass now takes weights and biases as parameters
+    xt::xarray<float> forward(
+        const xt::xarray<float>& x,
+        const xt::xarray<float>& gamma,
+        const xt::xarray<float>& beta
+    );
     
 private:
-    xt::xarray<float> weight;  // gamma (stored from input)
-    xt::xarray<float> bias;    // beta (stored from input)
     float epsilon;
 };
