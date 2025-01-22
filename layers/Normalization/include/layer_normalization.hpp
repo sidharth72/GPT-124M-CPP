@@ -11,7 +11,7 @@
 class LayerNormalization {
 public:
     // Constructor now only takes epsilon
-    explicit LayerNormalization(float eps = 1e-5);
+    explicit LayerNormalization(float eps = 1e-05);
     
     // Forward pass now takes weights and biases as parameters
     xt::xarray<float> forward(

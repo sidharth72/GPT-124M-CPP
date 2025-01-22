@@ -194,9 +194,23 @@ target_link_libraries(multi_head_attention PUBLIC
 )
 
 
-# target_link_libraries(${PROJECT_NAME} PRIVATE
-#     normalization_layer
-# )
+# MLP layer library
+add_library(mlp_layer
+    ${LAYERS_DIR}/MLP/src/mlp.cpp
+)
+
+target_include_directories(mlp_layer PUBLIC
+    ${COMMON_INCLUDE_DIRS}
+    ${LAYERS_DIR}/MLP/include  # Ensure MLP header files are found
+)
+
+target_link_libraries(mlp_layer PUBLIC
+    xtensor
+    xtensor-blas
+    OpenBLAS::OpenBLAS
+    # Add any other libraries that MLPLayer depends on
+)
+
 
 # =================================================================
 # Library Targets
@@ -238,6 +252,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     activations
     scaled_dot_attention
     multi_head_attention
+    mlp_layer
     parameter_loader
     xtensor
     xtensor-blas

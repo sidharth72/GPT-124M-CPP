@@ -47,7 +47,7 @@ std::pair<xt::xarray<float>, xt::xarray<float>> ScaledDotAttention::forward(
         xt::xarray<float> mask_value = xt::ones_like(scaled_attention_scores) * 
             (-std::numeric_limits<float>::infinity());
         scaled_attention_scores = xt::eval(xt::where(
-            xt::equal(*mask, 0.0f),
+            xt::equal(*mask, 1.0f),
             mask_value,
             scaled_attention_scores
         ));
